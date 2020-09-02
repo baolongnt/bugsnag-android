@@ -12,6 +12,10 @@ import com.bugsnag.android.Configuration
 import com.bugsnag.android.EndpointConfiguration
 import com.bugsnag.android.Logger
 import com.bugsnag.android.mazerunner.scenarios.Scenario
+import android.content.Intent
+
+
+
 
 class MainActivity : Activity() {
 
@@ -22,6 +26,9 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val closeDialog = Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
+        sendBroadcast(closeDialog)
 
         val bugsnagStarter = findViewById<Button>(R.id.startBugsnagButton)
 
