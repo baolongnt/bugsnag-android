@@ -233,6 +233,10 @@ bool bugsnag_event_is_unhandled(void *event_ptr);
 char *bugsnag_event_get_grouping_hash(void *event_ptr);
 void bugsnag_event_set_grouping_hash(void *event_ptr, char *value);
 
+/* Accessors for event.apiKey */
+
+char *bugsnag_event_get_api_key(void *event_ptr);
+void bugsnag_event_set_api_key(void *event_ptr, char *value);
 
 /* Accessors for event.metadata */
 

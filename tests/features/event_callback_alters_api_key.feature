@@ -16,3 +16,13 @@ Scenario: Unhandled exception with altered API key
     And the exception "message" equals "UnhandledExceptionApiKeyChangeScenario"
     And the payload field "apiKey" equals "0000111122223333aaaabbbbcccc9999"
     And the "Bugsnag-Api-Key" header equals "0000111122223333aaaabbbbcccc9999"
+
+Scenario: Native error with altered API key
+    When I run "CXXEventApiKeyChangeScenario" and relaunch the app
+    And I configure the app to run in the "non-crashy" state
+    And I configure Bugsnag for "CXXEventApiKeyChangeScenario"
+    And I wait to receive a request
+    And the exception "errorClass" equals "SIGABRT"
+    And the exception "type" equals "c"
+    And the payload field "apiKey" equals "0000111122223333aaaabbbbcccc9999"
+    And the "Bugsnag-Api-Key" header equals "0000111122223333aaaabbbbcccc9999"

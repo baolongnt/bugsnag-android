@@ -6,6 +6,7 @@
 
 bugsnag_event *init_event() {
     bugsnag_event *event = calloc(1, sizeof(bugsnag_event));
+    bsg_strncpy_safe(event->api_key, "a35a2a72bd230ac0aa0f52715bbdc6aa", sizeof(event->api_key));
     bsg_strncpy_safe(event->context, "Foo", sizeof(event->context));
     bsg_strncpy_safe(event->user.id, "123", sizeof(event->user.id));
     bsg_strncpy_safe(event->user.email, "jane@example.com", sizeof(event->user.email));
@@ -147,6 +148,15 @@ TEST test_event_grouping_hash(void) {
     ASSERT_STR_EQ("Bar", event->grouping_hash);
     bugsnag_event_set_grouping_hash(event, "Wham");
     ASSERT_STR_EQ("Wham", bugsnag_event_get_grouping_hash(event));
+    free(event);
+    PASS();
+}
+
+TEST test_event_api_key(void) {
+    bugsnag_event *event = init_event();
+    ASSERT_STR_EQ("a35a2a72bd230ac0aa0f52715bbdc6aa", event->api_key);
+    bugsnag_event_set_api_key(event, "0000111122223333aaaabbbbcccc9999");
+    ASSERT_STR_EQ("0000111122223333aaaabbbbcccc9999", bugsnag_event_get_api_key(event));
     free(event);
     PASS();
 }
@@ -373,6 +383,7 @@ SUITE(event_mutators) {
     RUN_TEST(test_event_unhandled);
     RUN_TEST(test_event_user);
     RUN_TEST(test_event_grouping_hash);
+    RUN_TEST(test_event_api_key);
     RUN_TEST(test_app_binary_arch);
     RUN_TEST(test_app_build_uuid);
     RUN_TEST(test_app_id);

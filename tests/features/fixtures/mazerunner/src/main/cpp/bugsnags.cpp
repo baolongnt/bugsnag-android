@@ -381,4 +381,16 @@ Java_com_bugsnag_android_mazerunner_scenarios_CXXGetJavaDataScenario_activate(JN
     __builtin_trap();
 }
 
+bool event_api_key_callback(void *event) {
+    bugsnag_event_set_api_key(event, "0000111122223333aaaabbbbcccc9999");
+    return true;
+}
+
+JNIEXPORT void JNICALL
+Java_com_bugsnag_android_mazerunner_scenarios_CXXEventApiKeyChangeScenario_crash(JNIEnv *env,
+                                                                                 jobject instance) {
+    bugsnag_add_on_error(&event_api_key_callback);
+    abort();
+}
+
 }

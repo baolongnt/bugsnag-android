@@ -466,6 +466,16 @@ void bugsnag_event_set_grouping_hash(void *event_ptr, char *value) {
   bsg_strncpy_safe(event->grouping_hash, value, sizeof(event->grouping_hash));
 }
 
+char *bugsnag_event_get_api_key(void *event_ptr) { // TODO test me
+  bugsnag_event *event = (bugsnag_event *) event_ptr;
+  return event->api_key;
+}
+
+void bugsnag_event_set_api_key(void *event_ptr, char *value) { // TODO test me
+  bugsnag_event *event = (bugsnag_event *) event_ptr;
+  bsg_strncpy_safe(event->api_key, value, sizeof(event->api_key));
+}
+
 int bugsnag_event_get_stacktrace_size(void *event_ptr) {
   bugsnag_event *event = (bugsnag_event *) event_ptr;
   return event->error.frame_count;

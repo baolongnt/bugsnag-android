@@ -349,6 +349,12 @@ void bsg_serialize_context(const bugsnag_event *event, JSON_Object *event_obj) {
   }
 }
 
+void bsg_serialize_api_key(const bugsnag_event *event, JSON_Object *event_obj) { // TODO test me
+  if (strlen(event->api_key) > 0) {
+    json_object_set_string(event_obj, "apiKey", event->api_key);
+  }
+}
+
 void bsg_serialize_grouping_hash(const bugsnag_event *event, JSON_Object *event_obj) {
   if (strlen(event->grouping_hash) > 0) {
     json_object_set_string(event_obj, "groupingHash", event->grouping_hash);
@@ -558,6 +564,7 @@ char *bsg_serialize_event_to_json_string(bugsnag_event *event) {
   json_array_append_value(exceptions, ex_val);
   char *serialized_string = NULL;
   {
+    bsg_serialize_api_key(event, event_obj);
     bsg_serialize_context(event, event_obj);
     bsg_serialize_grouping_hash(event, event_obj);
     bsg_serialize_handled_state(event, event_obj);
