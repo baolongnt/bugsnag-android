@@ -1,45 +1,48 @@
 buildscript {
     repositories {
-        mavenLocal()
         google()
-        mavenCentral()
         jcenter()
     }
-    ext.kotlin_version = "1.3.72"
-
     dependencies {
-        classpath "com.android.tools.build:gradle:3.6.0"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "com.bugsnag:bugsnag-android-gradle-plugin:4.7.5"
+        classpath 'com.android.tools.build:gradle:4.0.1'
+        classpath 'com.bugsnag:bugsnag-android-gradle-plugin:5.0.1'
+        classpath 'com.google.gms:google-services:4.3.3'
     }
 }
 
 allprojects {
     repositories {
-        mavenLocal()
         google()
-        mavenCentral()
         jcenter()
-        maven { // add this to use snapshots
-            url "https://oss.sonatype.org/content/repositories/snapshots/"
-        }
+        maven { url "https://jitpack.io" }
     }
 }
 
 ext {
-    // Note minSdkVersion must be >=21 for 64 bit architectures
+    // Build name
+    buildName = "1.3.4"
+
+    // Build number
+    buildNumber = 61
+
+    // Build prefix (Google)
+    googleBuildPrefix = 16
+
+    // SDK versions
     compileSdkVersion = 29
-    minSdkVersion = 14
-    supportLibVersion = "1.1.0"
-    espressoVersion = "3.1.0"
+    targetSdkVersion = 29
+    minSdkVersion = 16
+
+    // Build tools version
+    buildToolsVersion = "29.0.3"
 }
 
-apply plugin: "com.android.application"
-apply plugin: "kotlin-android"
+apply plugin: 'com.android.application'
+apply plugin: "com.bugsnag.android.gradle"
 
 android {
     signingConfigs {
-        config {
+        release {
             keyAlias "password"
             keyPassword "password"
             storeFile file("fakekeys.jks")
@@ -47,29 +50,108 @@ android {
         }
     }
     compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
+        applicationId "com.bugsnag.example"
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.compileSdkVersion
-        signingConfig signingConfigs.config
-        ndk.abiFilters = project.hasProperty("ABI_FILTERS") ? project.ABI_FILTERS.split(",") :
-                ["arm64-v8a", "armeabi-v7a", "x86", "x86_64"]
+        targetSdkVersion rootProject.ext.targetSdkVersion
+
+        if (rootProject.ext.buildNumber >= 100 ) {
+            versionCode = rootProject.ext.googleBuildPrefix * 1000 + rootProject.ext.buildNumber
+            versionName "${rootProject.ext.buildName}-${rootProject.ext.googleBuildPrefix}${rootProject.ext.buildNumber}"
+        } else {
+            versionCode = rootProject.ext.googleBuildPrefix * 100 + rootProject.ext.buildNumber
+            if ( rootProject.ext.buildNumber < 10 ) {
+                versionName "${rootProject.ext.buildName}-${rootProject.ext.googleBuildPrefix}0${rootProject.ext.buildNumber}"
+            } else {
+                versionName "${rootProject.ext.buildName}-${rootProject.ext.googleBuildPrefix}${rootProject.ext.buildNumber}"
+            }
+        }
+
+        vectorDrawables.useSupportLibrary = true
+        resConfigs "en", "fr", "en-rGB", "pl", "pt-rBR", "uk"
+        setProperty("archivesBaseName", applicationId + "-" + versionCode)
     }
+
     buildTypes {
-        release {
+        debug {
+            debuggable true
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+            signingConfig signingConfigs.release
+        }
+        udebug {
+            debuggable false
+            applicationIdSuffix ".udebug"
+            versionNameSuffix "-udebug"
             minifyEnabled true
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard.pro"
-            signingConfig signingConfigs.config
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.release
+            matchingFallbacks = ['release']
+        }
+        rdebug {
+            debuggable false
+            applicationIdSuffix ".rdebug"
+            versionNameSuffix "-rdebug"
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.release
+            matchingFallbacks = ['release']
+        }
+        release {
+            debuggable false
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.release
         }
     }
-    externalNativeBuild.cmake.path "CMakeLists.txt"
+
+    bundle {
+        density.enableSplit = true
+        abi.enableSplit = true
+        language.enableSplit = false
+    }
+
+    flavorDimensions "store"
+    productFlavors {
+        google {
+            dimension "store"
+            isDefault.set(true)
+        }
+    }
+
+    variantFilter { variant ->
+        def flavorString = ""
+        def flavors = variant.getFlavors()
+        for (int i = 0; i < flavors.size(); i++) {
+            flavorString += flavors[i].name
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            outputFileName = "${variant.applicationId}-${variant.versionCode}.apk"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lintOptions {
+        disable 'MissingDefaultResource'
+    }
 }
 
 dependencies {
-    implementation "com.bugsnag:bugsnag-android:5.0.0"
-    implementation "androidx.appcompat:appcompat:$supportLibVersion"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation "com.bugsnag:bugsnag-android:5.0.2"
+    implementation "androidx.appcompat:appcompat:1.2.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.3.72"
 }
 
-apply plugin: "com.bugsnag.android.gradle"
-bugsnag.failOnUploadError = false
+task doTheGoogleThing(dependsOn: ['assembleGoogleDebug', 'assembleGoogleRelease']) {}
+task doTheAmazonThing(dependsOn: ['assembleAmazonDebug', 'assembleAmazonRelease']) {}
+task doTheEverything(dependsOn: ['assembleGoogleDebug', 'assembleGoogleRelease', 'assembleAmazonDebug', 'assembleAmazonRelease']) {}
+task releaseOnly(dependsOn: ['assembleGoogleRelease', 'assembleAmazonRelease']) {}
