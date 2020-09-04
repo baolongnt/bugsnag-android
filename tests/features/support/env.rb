@@ -17,7 +17,7 @@ Before('@skip_above_android_8') do |scenario|
 end
 
 Before('@skip_above_android_7') do |scenario|
-  skip_this_scenario("Skipping scenario") if %w[ANDROID_8_0 ANDROID_8_1 ANDROID_9_0 ANDROID_10_0].include? bs_device
+  skip_this_scenario("Skipping scenario") if %w[ANDROID_8_0 ANDROID_8_1 ANDROID_9_0 ANDROID_10_0].include? bs_device or bs_device.start_with? 'ANDROID_8_0' or bs_device.start_with? 'ANDROID_8_1'
 end
 
 Before('@skip_below_android_9') do |scenario|
@@ -25,11 +25,11 @@ Before('@skip_below_android_9') do |scenario|
 end
 
 Before('@skip_below_android_8') do |scenario|
-  skip_this_scenario("Skipping scenario") unless %w[ANDROID_8_0 ANDROID_8_1 ANDROID_9_0 ANDROID_10_0].include? bs_device
+  skip_this_scenario("Skipping scenario") unless (%w[ANDROID_8_0 ANDROID_8_1 ANDROID_9_0 ANDROID_10_0].include? bs_device or bs_device.start_with? 'ANDROID_8_0' or bs_device.start_with? 'ANDROID_8_1')
 end
 
 Before('@skip_android_8_1') do |scenario|
-  skip_this_scenario("Skipping scenario") if %w[ANDROID_8_1].include? bs_device
+  skip_this_scenario("Skipping scenario") if bs_device.start_with? 'ANDROID_8_1'
 end
 
 AfterConfiguration do |config|
